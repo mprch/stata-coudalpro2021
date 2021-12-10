@@ -1,0 +1,747 @@
+* This do file uses the European Social Survey and focuses on variations of political leanings (DV) by types of media consumption (IV). 
+
+* H1: We hypothesize that TV consumption and political polarity may correlate, but this is not causation. 
+* H2: We hypothesize that radio consumption is positively correlated with right-wing political beliefs. 
+* H3: We hypothesize that newspaper consumption is positively correlated with right-wing political beliefs. 
+
+* ==> These hypotheses come from the fact that the radio and newspapers are older forms of media so they would tend to be more consumed by the older generation that is associated with more conservative politics.*
+
+* ====================
+*  = DATA OVERVIEW =
+* ====================
+
+* We use the European Social Survey 2008-2010 dataset. This dataset contains 507 variables and 109,210 observations. 
+use data/ess0810, clear
+
+* Since we are using the European Social Survey, we want to inspect the list of 
+* countries included in this dataset. Thirty countries are included in the data set. 
+fre cntry
+
+* Below are the variables used in this research design: 
+d lrscale tvtot rdtot nwsptot gndr agea hincfel 
+
+* Our dependent variable is lrscale. Our independent variables of interest are tvtot, 
+* rdtot, and nwsptot. Our control variables are gndr, agea and hincfel. 
+
+* ========================================================
+* = DEPENDENT VARIABLE = PLACEMENT ON THE LEFT RIGHT SCALE
+* ========================================================
+	
+* DV Manipulation 
+* ---------------------
+	
+* Our dependent variable is measured on a scale of 0 to 10, with 0 being the furthest
+* left and 10 the furthest right. We assume that people who answered 5 would
+*  hold centrist political views. We want to recode our dependent variable to a 
+* simpler form to facilitate further analysis and make the graphs easier to interpret. 
+* Our recoded dependent variable will now take three values: Left, Center, and Right. 
+recode lrscale (0/4 = 1 "Left") /// 
+               (5 = 2 "Center") ///
+			   (6/10 = 3 "Right") ///
+			   (else = .), gen(polspec)
+la var polspec "Placement on the Political Spectrum (1/3)" 
+fre polspec 
+
+* Another way to look at our recoded variable: 
+tab polspec, gen(polspec)
+
+* =========================
+* = INDEPENDENT VARIABLES =
+* =========================
+
+* Overview of independent variables.
+fre tvtot rdtot nwsptot gndr agea hincfel 
+
+* Independent variable N°1: TV watching, total time on average weekday
+* ---------------------------------------------------------------------------------------
+
+*We are basically trying to know the impact of media consumption on political views, so we decided to recode all of our IVs that are related to it in three categories  in order to have a qualitative approach and analysis. Here we are trying to see if the way of consuming these different types of media can also affect political views.
+
+* We recall our first Independent Variable: 
+fre tvtot 
+
+* Similarly to the dependent variable, we want to recode our first independent variable to a simpler form. 
+recode tvtot (0 = 0 "No consumption") ///
+             (1/2 = 1 "Minor consumption") ///
+             (3/5 = 2 "Moderate consumption") /// 
+			 (6/7 = 3 "Major consumption") ///
+			 (else = .), gen(tvtot4)
+la var tvtot4 "Television Consumption 4 groups (0/3)"
+fre tvtot4
+
+
+* Independent variable N°2: Radio listening, total time on average weekday
+* ------------------------------------------------------------------------------
+
+* We recall our second independent variable: 
+fre rdtot
+
+* Again, we recode the independent variable. 
+recode rdtot (0 = 0 "No consumption") /// 
+             (1/2 = 1 "Minor consumption") ///
+             (3/5 = 2 "Moderate consumption") /// 
+			 (6/7 = 3 "Major consumption") ///
+			 (else = .), gen(rdtot4)
+la var rdtot4 "Radio Consumption 4 groups (0/3)"
+fre rdtot4
+
+
+* Independent variable N°3: Newspaper reading, total time on average weekday
+* ------------------------------------------------------------------------------
+* We recall our third IV. 
+fre nwsptot
+
+* We recode it. 
+recode nwsptot (0 = 0 "No consumption") /// 
+               (1/2 = 1 "Minor consumption") ///
+               (3/5 = 2 "Moderate consumption") /// 
+			   (6/7 = 3 "Major consumption") ///
+			   (else = .), gen(nwsptot4)
+la var nwsptot4 "Newspaper Consumption 4 groups (0/3)"
+fre nwsptot4
+
+
+* Independent Variable N°4: Gender 
+* --------------------------------
+
+fre gndr 
+
+* For this IV, we don't need to recode it to a simpler form. However, we need to tell STATA that -.d- are missing values. 
+replace gndr = . if gndr == .d 
+
+* We inspect our "clean" variable. 
+fre gndr 
+
+* Independent Variable N°5: Age of respondent, calculated 
+* -------------------------------------------------------
+
+*We also chose to recode our age IV because it included a lot of data, this way we can handle it better and have a more detailed analysis.
+
+* We recall our fifth IV. 
+fre agea
+
+* We recode it to simplify a large dataset into easily understood sections. 
+recode agea (22/34 = 1 "Early Adulthood") ///
+             (35/44 = 2 "Middle Age") ///
+             (45/64 = 3 "Late Middle Age") /// 
+		 (65/99 = 4 "Late Adulthood") /// 
+		 (else = .), gen(agea4)
+la var agea4 "Age 4 Groups"
+fre agea4
+
+* Independent Variable N°6: Feeling about household's income nowadays
+* -------------------------------------------------------------------
+
+fre hincfel 
+
+* Similarly to gender, we don't need to recode this variable to a simpler form. However, 
+* we need to tell STATA that -.b, c, d- are missing values. 
+replace hincfel  = . if hincfel  == .b  
+replace hincfel = . if hincfel == .c
+replace hincfel = . if hincfel == .d 
+				
+* We inspect our "clean" variable 
+fre hincfel
+
+*once these variables are all cleaned, we analyze the summary statistics
+su lrscale tvtot rdtot nwsptot gndr agea hincfel 
+ 
+* =============================
+* = MISSING VALUES ASSESSMENT =
+* =============================
+
+* Now we need to drop the missing values of the selected variables. In order to do this, 
+* we need to see the pattern of missing values. 
+misstable pat polspec tvtot4 rdtot4 nwsptot4 gndr agea4 hincfel 
+
+* Important note: Originally, we used other independent variables of interest: Tvpol 
+* (TV watching news/politics/current affairs on average weekday), 
+* rdpol (Radio listening news/politics/current affairs on average weekday), 
+* and nwsppol (Newspaper reading, politics/current affairs on average weekday). 
+* However, at that stage of the analysis, we realized that there were a lot of missing values for nwsppol. 
+* As such, our total percentage of complete values was only 33%, which would have considerably 
+* impacted the representativeness of our analysis. Solely changing or removing nwsppol 
+* would not have been relevant to our research. Therefore, we decided to change all our 
+* independent variables of interest and we chose: tvtot, rdtot, nwsptot. The percentage of 
+* complete values was now 60%. For an independent variable we had also chosen household income,
+* which also had a lot of missing values. Therefore, we changed that variable to feelings 
+* about current household income, hincfel. Our complete values percentage increased to 76%. 
+* Now, we can drop the missing observations. 
+
+drop if mi(polspec, tvtot4, rdtot4, nwsptot4, gndr, agea4, hincfel)
+
+* After our missing values have been dropped, we look for the final count, which will be the sample size of our analysis.
+count 
+
+* So our sample size equals 83,018. 
+
+* ====================
+* = FURTHER ANALYSIS =
+* ====================
+
+* Normality Tests 
+* ------------------------------------
+
+* =============
+* = NORMALITY =
+* =============
+
+
+* Continuous variables are expected to approach a normal distribution, a result more easily obtained at higher sample sizes. Let's check if the distribution of our DV (lrscale) values approaches normality, and if not, let's transform the variable to bring it closer to normality. We start with a visual inspection and complete the assessment with two statistical measures.
+
+
+* Visual assessment
+* -----------------
+
+* Hypothesis: We think that our distribution will not be normal because the chance to have the same 
+* Number of respondents for every political orientation is low. 
+
+* We inspect our DV. 
+fre lrscale
+
+* Based on the results below we can observe that the majority of respondents are center-leaning. 
+*This can play a role in influencing the results towards a center and right-wing tendency since there is a numerical superiority. 
+* We also observe that there are missing values due to the fact that some of the respondents chose not to answer or that they don't know. 
+
+
+* We draw a histogram with three different elements: the actual bins (bars)
+* of the lrscale variable, its kernel density, and an overimposed normal curve
+* that we draw in a different colour using a few graph options.
+hist lrscale, bin(15) normal kdensity kdenopts(lp(dash) lc(black) bw(1.5)) ///
+	note("Normal distribution (solid red) and kernel density (dashed black).") ///
+	name(lrscale, replace)
+	
+* This histogram shows a centered and symmetrical curve but we can observe a huge density in the center-right which can be linked with the fact that there is a concentration of values coming from center-leaning and right-leaning respondents.*
+
+* As a result, the distribution seems to be symmetrical, which we can verify using a
+* particular graphical technique that emphasizes deviations from symmetry.
+* Perfect symmetry corresponds to the straight red line.
+symplot lrscale, ti("Symmetry plot") ///
+	name(lrscale_sym, replace)
+	
+	
+* DV Formal Assessment 
+* ---------------------
+
+* We will be going to confirm or deny the hypothesis below on a more concrete basis, 
+* by analyzing the data related to the central tendency and the spreading. 
+* Reminder for the distribution to be considered as normal: 
+* The mean = the median 
+* Kurtosis = 3 
+* Skewness = 0 
+
+* We use the -su- command to analyze our DV's statistics in detail. 
+su lrscale, d 
+
+* First, we can see that our mean does not equal the median. The mean should be 
+*equal to 5 (median), and it is actually 5,183.
+* Then, our kurtosis is almost equal to 3 (it's equal to 2,99).
+* Our skewness equals -0,02 which means that it is negative and our distribution
+* is a bit left-skewed. It implies that there is a majority of center and right-leaning values. 
+*But overall, our statistical measures of normality are really closed to the measures expected from a normal distribution and we 
+
+* We can also observe this tendency of center and right-leaning values by looking at the quartiles. 
+tabstat lrscale, s(p25 median p75 iqr)
+
+* Another visualization plots the quantiles of the variable against those of the normal distribution.*
+
+qnorm lrscale, ti("Normal quantile plot") ///
+name(lrscale_qnorm, replace)
+
+*We can observe that our values are following the straight red line which corresponds to the normal distribution. It also allows us to see that there is an excess of observations at some values. 
+
+*Variable transformation
+
+* *Since we concluded that our distribution was almost perfect both in terms of visual and formal assessment, we don’t need to effectuate a transformation. We still did for curiosity reasons and obtained the following values : 
+
+gen loglrscale = ln(lrscale)
+la var loglrscale "Placement on left right scale (log units)"
+
+* Looking at skewness and kurtosis for the logged variable.
+tabstat lrscale loglrscale, s(n sk kurtosis min max) c(s)
+
+*After transformation :
+*Skewness = -1.208
+*Kurtosis = 5.08
+*Mean = 1.59
+hist loglrscale, normal /// 
+name(loglrscale, replace)
+
+*The transformation does not show any improvement towards normality, paradoxically it is even worse as it contributed to creating bigger density in the right-leaning values.
+
+
+* ==================
+* = SAMPLING ERROR =
+* ==================
+
+* We observed that even after the missing values assessment, our sample size remained quite huge. Still, compared to all the European population it would be inaccurate to say that this is a very large proportion. For that matter, we are going to try to confirm if our sample reflects the true population mean even if we observed a quasi-perfect distribution. 
+*The confidence interval reflects the standard error of the mean, itself
+* a reflection of sample size. 
+
+* Mean lrscale for the full sample with a 95% CI.
+ci means lrscale
+
+* Mean lrscale for the full sample with a 99% CI (more confidence, less precision).
+ci means lrscale, level(99) 
+
+* The confidence intervals for the full sample show a high precision, both at
+* the 95% (alpha = 0.05) and 99% (alpha = 0.01) levels. This is due to the high
+* number of observations available for our DV: lrscale. 
+
+*Note: For 95% we have a 5.176335 mean for a  [5.161083  -  5.191588] confidence interval
+*For 99% we have a  5.176335 mean for a  [5.159448    5.193223] confidence interval
+*The 99% helps us to gain certainty, but it also shows that if we certainly lose accuracy compared to 95% it's really a barely perceptible loss
+
+**The logic behind constructing a confidence interval was to estimate a population parameter, here the mean when we only have data from a sample. We don't know if our sample statistic is less than, greater than, or approximately equal to the population mean. We don't know either if our confidence interval contains the population mean or not. But based on what we found we can confidently say that 95% of the true population mean is contained between 5.161083  and 5.191588.
+ 
+ 
+* If we compute the average lrscale for subsamples of the population, such as one
+* category of the population, the total number of observations will drop and
+* the confidence interval will widen, as shown here with smaller subsamples:
+ci means lrscale in 1/10
+ci means lrscale in 1/100
+ci means lrscale in 1/1000
+ci means lrscale in 1/10000
+
+* This basically shows that having a smaller sample would have resulted in really low precision and confirms that having a big sample really refined and narrow our analysis. 
+
+*We are still assessing the representativeness of our sample. We are now trying to see if external factors other than media consumption could influence people's political placement. 
+
+*We are going to assess the influence of our control variables and assume that lrscale could vary depending on age, gender or income. We are going to visually represent the possible impact produced by the different variables. 
+
+gr dot lrscale, over(agea4) over(hincfel) over(gndr) asyvars scale(.7) 
+
+gr dot lrscale, over(hincfel) over(agea4) over(gndr) asyvars scale(.7)
+
+gr dot lrscale, over(gndr) over(hincfel) over(agea4) asyvars scale(.7)
+
+*We can see that gender, age and income have different effects on people concerning political placement. A different way to see it would be using this :
+
+gr hbox lrscale, over(hincfel) over(agea4) asyvars over(gndr)
+
+gr hbox lrscale, over(agea4) over(hincfel) asyvars over(gndr)
+
+gr hbox lrscale, over(gndr) over(agea4) asyvars over(hincfel)
+
+
+* Confidence intervals with proportions
+* -------------------------------------
+
+* Categorical variables, which can be described through proportions, also
+* come with confidence intervals that reflect the range of values that each
+* category might take in the true population. For instance, the proportions of gender groups or income groups are somewhere in these intervals 
+
+prop gndr
+prop hincfel
+
+
+* Exploring our hypothesis: Displaying the DV over the IVs
+* -------------------------------------------------------- 
+
+*We run a basic bivariate correlation to see the correlations between Polspec and our IVs
+correlate polspec tvtot4 rdtot4 nwsptot4 gndr agea4 hincfel 
+
+* Preliminary analysis: based on the run correlation, there is a slight negative 
+* correlation between polspec and tvtot. On the other hand, there is a very slight 
+* positive correlation between rdtot and polspec, and a stronger positive correlation 
+* between nwsptot and polspec. This shows that, based on our preliminary analysis of 
+* the correlations, that nwsptot has the strongest effect on polspec. This leads us 
+* to the conclusion that newspaper consumption might be related to placement on the right 
+* in the political spectrum. When accounting for our controls, both gndr and hincfel 
+* had similar negative correlations with polspec, which indicates that both have somewhat 
+* of an effect on polspec. The strongest correlation with polspec is hincfel, which is -0.0505. 
+* This analysis is entirely cursory and rudimentary, and further exploration is needed. 
+
+* We also cross-tabulate our IVs with our DV to see if we can make other preliminary conclusions: 
+tab polspec tvtot4 
+tab polspec rdtot4
+tab polspec nwsptot4 
+
+* Based on these results, the impact on media consumption shows no clear and strong influence 
+* on political spectrum placement. 
+
+* Now we will run significance tests to determine if what we observe in our data would be different in random data. 
+* Here we will test our null hypothesis (H0): in a world with no correlations between media consumption and placement on the political spectrum, what is the chance that we would observe a correlation? 
+* The significance tests will not prove a correlation, they will simply tell us if we can reject the null hypothesis. 
+* In the t-tests and chi-square tests, we will be careful to look at the p-value, if the p-value is small, then we can reject the null hypothesis.  
+
+* ======================
+* = SIGNIFICANCE TESTS =
+* ======================
+
+* We recall the nature of our variables: 
+* age = continuous 
+* feeling about income = categorical 
+* gender = categorical 
+* tvtot, nwsptot, rdtot = categorical 
+
+
+* IV: Age
+* -------
+
+su agea
+*The mean is around 50-51years old which is the average age of the respondents, the min is at 22 which is the age of the youngest respondents while the max is at 99, the age of the oldest respondents.
+* Check normality.
+hist agea, bin(15) normal ///
+    name(age, replace)
+
+*This variable doesn't have a normal distribution, there are more respondents between 40 and 60 years old. Before 40yo the density is not significantly lower, at 60 years old we observe a very high density of respondents while after 60 years there is a strong decrease in density. The curve peaks around 50
+*We previously recoded our age variable in 4 categories and renamed it "agea4". 
+*Note: it became a categorical variable
+
+fre agea4
+
+*We can see that the late middle age (45/64 according to our recoding) represents most of the respondents in terms of frequencies and percentages. This confirms and explains what we observed earlier, there is a huge density in this group.
+                                   
+* Spineplot.
+spineplot lrscale agea4, ///
+	name(dv_age, replace)
+
+*We can see that the center political placement takes a lot of proportion in every age group while the far left appears to be less popular among every age group. We still can see that in terms of proportion the late middle age group is the biggest. 
+*Generally and based on these variations we can conclude that age seemingly has an effect on political placement. 
+	
+* Comparison of average age in each category.
+*Because agea is categorical, we need to create a binary variable for each category of our Independent variable. 
+tab agea, gen(agea_)
+d agea_?
+codebook agea_?, c
+
+* We can now compare the averages for each category of our IV. 
+ttest lrscale, by(agea_1) 
+ttest lrscale, by(agea_2)
+ttest lrscale, by(agea_3)
+ttest lrscale, by(agea_4)
+ttest lrscale, by(agea_5)
+ttest lrscale, by(agea_6)
+ttest lrscale, by(agea_7)
+ttest lrscale, by(agea_8)
+ttest lrscale, by(agea_9)
+
+*Note: the p-value is telling us that if we have such a sample, in a world where there are no differences among age categories; a sample like this, is part of the x% most common sample.
+*For agea_4, agea_5, and agea_6, the p-value is really low meaning these samples are not common. Accordingly, we can refute H0 according to which every age category is the same on the political scale. 
+*For the other categories, the p-value is high, in that way we can't refute H0 with them. 
+
+* IV: Gender
+* ----------
+
+fre gndr
+
+gen female:female = (gndr==2) if !mi(gndr) // dummify
+la def female 0 "Male" 1 "Female"
+la var female "Gender"
+
+* Conditional probabilities:
+*Here we are going to use polspec which is our lrscale recoded variable in order to have two categorical variables. It will also help us in analyzing the results more easily.
+
+tab polspec female, col nof // column percentages
+*According to the table, there are differences especially in the center-leaning and right-leaning orientations. The left-leaning doesn't show a significant difference between males and females but the center of the political spectrum is preferred by the females while the right is preferred by the males.
+
+tab lrscale female, row nof // rows percentages
+*Weirdly, this table does not show the same results. Females have a higher percentage in every placement on the political spectrum. We could assume that this is caused by the fact that there are more female respondents. 
+
+* Comparison of proportions in each category.
+
+**Because polspec is categorical, we need to create a binary variable for each category of our dependent variable.
+
+tab polspec, gen(polspec_)
+d polspec_?
+codebook polspec_?, c
+
+prtest female, by(polspec_1) /// For the Left category
+
+prtest female, by(polspec_2) /// For the Center category
+
+prtest female, by(polspec_3) /// For the Right category
+
+*For the left category, the p-value is really high (O.84 meaning that this sample could be really common. So we can't refute the H0 according to which every gender is the same/have the same influence on the political scale.
+*But for the Center and the Right category, the p-value is 0. It means that for these placements on the political spectrum, we can reject H0 and we can affirm that genders aren't the same and don't have the same influence on it.
+
+* IV: Feeling about household's income nowadays
+* ------------------
+*Here we chose polspec to facilitate the graph's lecture and the analysis
+
+fre hincfel
+*Among the respondents, 44% are concentrated in category 2 "coping on present income and less than 10% is in the category 4 'very difficult on present income, it could create a bias.'
+
+* Spineplot.
+spineplot polspec hincfel
+
+*According to the spineplot, people living comfortably are more mostly right-leaning. People coping with present income are center and right-leaning. People with difficulty with present income are mostly center-leaning. People very difficult on present income are more left and center-leaning.  
+
+* Chi-squared test.
+tab polspec hincfel, row nof  // row percentages
+tab polspec hincfel, col nof  // column percentages
+tab polspec hincfel, cell nof // cell percentages
+** The three tables mostly confirm what we visually assessed. 
+
+tab polspec hincfel, chi2     // Chi-squared test
+
+** The p-value is 0 meaning that we can refute the H0 hypothesis according to which the feeling about income doesn't influence the political placement. 
+
+
+* TV watching, total time on average weekday, and Placement on the Political Spectrum 
+* ---------------------------------------------------------------------
+*We chose to use the recoded variables because the non-recoded ones produced a histogram that wasn't readable at all, too much information was present. 
+
+su tvtot4
+*The mean is 2.12 We could assume that there is a tendency towards the 2 that represents the moderate consumption. 
+
+* We check normality.
+hist tvtot4, bin(15) normal ///
+
+* We observe an asymmetrical distribution for tvtot4 and a left-skewed curve. There is also a huge density noticed after 2 (moderate consumption) and a noticeable density noticed at 3 (major consumption).
+
+* Spineplot.
+spineplot polspec tvtot4, ///
+	name(dv_tvtot4, replace)
+
+**It’s a bit difficult to notice significant differences on the spineplot except the fact that those having a major consumption tend to be more center-leaning.
+
+* Chi-squared test.
+tab polspec tvtot4, row nof  // row percentages
+tab polspec tvtot4, col nof  // column percentages
+tab polspec tvtot4, cell nof // cell percentages
+
+**According to the tables, those having no consumption tend to be equally left and right orientated. Those having a minor and moderate consumption are slightly right-leaning. Those having a major consumption are more center-leaning. 
+
+tab polspec tvtot4, chi2     // Chi-squared test
+** The p-value is 0. We refuse H0 according to which the amount of tv watching plays no role in determining the political placement of the sample.
+
+*Radio listening, total time on average weekday and Placement on the Political Spectrum 
+* ---------------------------------------------------------------------
+*We chose to use the recoded variables because the non-recoded ones produced a histogram that wasn't readable at all, too much information was present. 
+
+su rdtot4
+*The mean is 1.44 We could assume that there is a tendency towards the 1 that represents the minor consumption. 
+
+* We check normality.
+hist rdtot4, bin(15) normal ///
+
+* The distribution of rdtot4 is not too asymmetrical. The right-skewness is almost unnoticeable. There is also a huge density noticed after 1 as we previously remarked (minor consumption) and similar densities noticed at 0 and 3 (no consumption and major consumption).
+
+* Spineplot.
+spineplot polspec rdtot4, ///
+	name(dv_tvtot4, replace)
+
+** For the no consumption we can observe a center and right-leaning tendency. For minor consumption it is right-leaning. For moderate consumption it is left-leaning and for major consumption, we observe a center and right-leaning tendency.
+
+* Chi-squared test.
+tab polspec rdtot4, row nof  // row percentages
+
+** The table confirms our previous observations. 
+
+tab polspec rdtot4, col nof  // column percentages
+tab polspec rdtot4, cell nof // cell percentages
+*This table seems to confirm what we said about density. The percentages of respondents are higher in the minor consumption group and we have quite similar percentages in the no consumption and major consumption groups. 
+
+tab polspec rdtot4, chi2     // Chi-squared test
+** The p-value is 0. We refuse H0 according to which the amount of radio listening plays no role in determining the political placement.
+
+
+*Newspaper reading, total time on average weekday and Placement on the Political Spectrum 
+* ---------------------------------------------------------------------
+*We chose to use the recoded variables because the non-recoded ones produced an histogram that wasn't readable at all, too much information was present. 
+
+su nwsptot4
+*The mean is 0.85 which is between no consumption and minor consumption but there is still a tendency towards the 1 that represents the minor consumption. 
+
+* We check normality.
+hist nwsptot4, bin(15) normal ///
+
+* The distribution of nwsptot4 is asymmetrical. There is a noticeable right-skewness. There is also a huge density noticed around 1 (minor consumption) and an increase in density around 0 (no consumption).
+
+* Spineplot.
+spineplot polspec nwsptot4, ///
+	name(dv_nwsptot4, replace)
+
+** The spineplot allows us to confirm that there is a huge density in the minor consumption category. The no consumption category is center-leaning, the minor consumption one seems right-leaning, the moderate consumption looks ostensibly right-leaning and the major consumption that has a really tiny density is right-leaning.
+
+* Chi-squared test.
+tab polspec nwsptot4, row nof  // row percentages
+
+** The table confirms our previous observations. 
+
+tab polspec nwsptot4, col nof  // column percentages
+tab polspec nwsptot4, cell nof // cell percentages
+*This table seems to confirm what we said about density. The percentages of respondents are significantly in the minor consumption group and we have a really tiny density in the major consumption groups. 
+
+tab polspec nwsptot4, chi2  // Chi-squared test
+** The p-value is 0. We refuse H0 according to which the amount of newspaper reading plays no role in determining the political placement.
+
+* ================
+* = CORRELATIONS = 
+* ================
+
+* Our only two continuous variables are: agea and lrscale. So we do not use correlations for the rest of our variables because they are categorical. 
+* When the coefficient is above O.80 we can consider it a strong correlation. 
+* Below O.20 it is a weak correlation. In the middle (between 0.20 and 0.80), it would be average 
+
+* Correlation Test N°1: age and lrscale 
+* -------------------------------------
+
+scatter agea lrscale  
+* In this case, it is hard to spot a correlation between the two variables. 
+
+* There does not seem to be a clear pattern here, so we use a logarithmic variable transformation. 
+sc agea lrscale, ysc(log) ///
+	name(age_placementpol, replace)
+* But this not really helping us as well. 
+
+pwcorr agea lrscale, sig  
+* It seems that we have a very small positive correlation of O.0062. Now we look at the p-value. The probability of drawing such a sample with a positive correlation of 0.0062 is 0.07, which is a bit too much, so this correlation is not significant. 
+
+tw (sc agea lrscale) (lfit agea lrscale), ///
+    yti("Pol placement (Age)") ///
+    name(agea_pol, replace)
+* We can see here that the best fit line is completely vertical, which is problematic. 
+
+
+* Correlation matrix  
+* ------------------
+
+* Now we indicate all the statistically significant correlations in the matrix with the use of an asterix (*). 
+pwcorr tvtot rdtot nwsptot agea gndr hincfel lrscale, obs sig star(.05)
+
+* We can also only show the statistically significant correlations. 
+pwcorr tvtot rdtot nwsptot agea gndr hincfel lrscale, print(.05)
+* Based on these results, we can see that tvtot is correlated with all the variables /  rdtot with nwsptot, gndr, and hincfel / nwsptot with agea, gndr, hincfel and lrscale / agea with gndr and hincfel / gender with hincfel and lrscale / hincfel with lrscale. 
+* We only have one average positive correlation: tvtot and agea (0.22). All the other correlations are very weak (below 0.20). 
+
+* To export our correlation matrix: 
+mkcorr tvtot rdtot nwsptot agea gndr hincfel lrscale, ///
+	lab num sig log("Finaldofile_correlations.txt") replace
+	
+
+* ========================
+* = MULTIPLE REGRESSIONS =  
+* ========================
+
+reg lrscale i.agea4 i.tvtot4 i.rdtot4 i.nwsptot4 i.hincfel i.gndr 
+* Here we see that our r-squared is very small, meaning that the amount of variations on the political spectrum that can be explained by our independent variables is only 0.0040. This is confirmed by the fact that only a few correlations between categories of the variables and lrscale are statistically significant (p-value being below 0.05). And for these statistically significant correlations, most of them have very low correlation coefficients, confirming the results of the correlation tests above. 
+
+reg lrscale i.tvtot4 i.rdtot4
+reg lrscale i.tvtot4 rdtot4 nwsptot4 i.agea4
+* This shows that the more we add our independent variables, the bigger the r-squared gets, but it still ends up being at a very low level. 
+
+* =========================
+* = REGRESSION DIAGNOSTICS =
+* =========================
+
+* First, we need to look at the distribution of the residuals and check if they distribute randomly. 
+
+
+* Storing fitted (predicted) values.
+cap drop yhat
+predict yhat
+
+
+* Standardized residuals
+* ----------------------
+
+cap drop r
+predict r, resid
+
+* We look at the normality of the residuals.
+kdensity r, norm legend(off) ti("") ///
+    name(diag_kdens, replace)
+* So here, on average, we can see that the residuals follow somehow the bell curve distribution. 
+
+* When we try to check the homoskedasticity of the residuals and identify the outliers, we get a graph that is not readable. We tried for polspec and lrscale. We believe that this is because of the nature of our variables. We have a lot of categorical variables and our dependent variable is quasi-continuous which can explain the difficulties we are encountering. 
+
+* Below is the commands we tried to run for demonstration purposes (we put them as comments because otherwise it takes a very long time for STATA to do the graph): 
+
+* rvfplot, yline(0) ms(i) mlab(lrscale) name(diag_rvf, replace)
+
+* cap drop rsta
+* predict rsta, rsta
+
+* sc rsta yhat, yline(-2 2) || sc rsta yhat if abs(rsta) > 2, ///
+    ylab(-3(1)3) mlab(lrscale) legend(lab(2 "Outliers")) ///
+    name(diag_rsta, replace)
+
+* We ran into the same problem for heteroskedasticity. 
+	
+
+* Variance inflation and interaction terms
+* -----------------------------------------
+
+vif
+
+*interaction term for lrscale and tvtot
+gen lrscaleXtvtot = lrscale * tvtot
+la var lrscaleXtvtot "Tvtot * lrscale"
+
+*interaction term for lrscale and nwsptot
+gen lrscaleXnwsptot = lrscale * nwsptot
+la var lrscaleXnwsptot "nwsptot * lrscale"
+
+*interaction term for lrscale and rdtot
+gen lrscaleXrdtot = lrscale * rdtot
+la var lrscaleXrdtot "rdtot * lrscale"
+
+*interaction term for lrscale and agea
+gen lrscaleXagea = lrscale * agea
+la var lrscaleXagea "agea * lrscale"
+
+*interaction term for lrscale and gndr
+gen lrscaleXgndr = lrscale * gndr
+la var lrscaleXgndr "gndr * lrscale"
+
+*interaction term for lrscale and hincfel
+gen lrscaleXhincfel = lrscale * hincfel
+la var lrscaleXhincfel "hincfel * lrscale"
+
+* We run the regression model.
+reg lrscale tvtot rdtot nwsptot agea gndr hincfel
+
+* We run the regression model with interaction terms.
+reg lrscale tvtot rdtot nwsptot agea gndr hincfel lrscaleXtvtot lrscaleXnwsptot lrscaleXrdtot lrscaleXagea lrscaleXgndr lrscaleXhincfel
+
+* We observe that we do not have the same variance, which is an issue. 
+* We get the same problem using the recoded variables. 
+
+*interaction term for lrscale and tvtot4
+gen lrscaleXtvtot4 = lrscale * tvtot4
+la var lrscaleXtvtot4 "Tvtot * lrscale"
+
+*interaction term for lrscale and nwsptot4
+gen lrscaleXnwsptot4 = lrscale * nwsptot4
+la var lrscaleXnwsptot "nwsptot * lrscale"
+
+*interaction term for lrscale and rdtot4
+gen lrscaleXrdtot4 = lrscale * rdtot4
+la var lrscaleXrdtot4 "rdtot4 * lrscale"
+
+*interaction term for lrscale and agea4
+gen lrscaleXagea4 = lrscale * agea4
+la var lrscaleXagea4 "agea4 * lrscale"
+
+*interaction term for lrscale and gndr
+
+la var lrscaleXgndr "gndr * lrscale"
+
+*interaction term for lrscale and hincfel
+
+la var lrscaleXhincfel "hincfel * lrscale"
+
+* We run the regression model.
+reg lrscale tvtot4 rdtot4 nwsptot4 agea4 gndr hincfel
+
+* We run the regression model with interaction terms.
+reg lrscale tvtot4 rdtot4 nwsptot4 agea4 gndr hincfel lrscaleXtvtot4 lrscaleXnwsptot4 lrscaleXrdtot4 lrscaleXagea4 lrscaleXgndr lrscaleXhincfel
+
+
+* Because of the nature of our DV, we wanted to try to do logistic regression to see if it would work better. But the problem is that we had to create a binary for our DV, and it was impossible as we already had recoded lrscale into polspec. 
+
+
+
+
+* =======
+* = END =
+* =======
+
+
+* Close log (if opened).
+cap log close
+* exit, clear
+
